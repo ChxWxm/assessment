@@ -1,6 +1,6 @@
 package com.kbtg.bootcamp.posttest.lottery;
 
-import com.kbtg.bootcamp.posttest.lottery.response.LotteryCreateResponse;
+import com.kbtg.bootcamp.posttest.lottery.response.LotteryTicketResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +24,7 @@ public class LotteryController {
     }
 
     @PostMapping("admin/lotteries")
-    public ResponseEntity<LotteryCreateResponse> createLottery(@RequestBody @Validated LotteryCreateRequest request) throws Exception {
+    public ResponseEntity<LotteryTicketResponse> createLottery(@RequestBody @Validated LotteryCreateRequest request) {
         return this.lotteryService.createLottery(request);
     }
 }

@@ -3,10 +3,10 @@ package com.kbtg.bootcamp.posttest.lottery.response;
 import lombok.Getter;
 
 @Getter
-public class LotteryCreateResponse {
+public class LotteryTicketResponse {
     private final String ticket;
 
-    public LotteryCreateResponse(String ticketNumber) {
+    public LotteryTicketResponse(String ticketNumber) {
         this.ticket = ticketNumber;
     }
 }

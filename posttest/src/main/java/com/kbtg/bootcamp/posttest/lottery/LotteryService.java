@@ -1,6 +1,7 @@
 package com.kbtg.bootcamp.posttest.lottery;
 
-import com.kbtg.bootcamp.posttest.lottery.response.LotteryCreateResponse;
+import com.kbtg.bootcamp.posttest.exception.NotFoundException;
+import com.kbtg.bootcamp.posttest.lottery.response.LotteryTicketResponse;
 import com.kbtg.bootcamp.posttest.user_account.UserAccount;
 import com.kbtg.bootcamp.posttest.user_account.UserAccountRepository;
 import com.kbtg.bootcamp.posttest.user_ticket.UserTicket;
@@ -44,21 +45,20 @@ public class LotteryService {
         return ResponseEntity.ok().body(ticketListResponse);
     }
 
-    public ResponseEntity<LotteryCreateResponse> createLottery(LotteryCreateRequest request) {
+    public ResponseEntity<LotteryTicketResponse> createLottery(LotteryCreateRequest request) {
         Lottery lottery = new Lottery();
         lottery.setTicket(request.ticket());
         lottery.setPrice(request.price());
         lottery.setAmount(request.amount());
 
         Lottery savedLottery = lotteryRepository.save(lottery);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(new LotteryCreateResponse(savedLottery.getTicket()));
+        return ResponseEntity.status(HttpStatus.CREATED).body(new LotteryTicketResponse(savedLottery.getTicket()));
     }
 
     @Transactional
-    public ResponseEntity<Map<String, Integer>> buyLottery(Integer userId, Integer ticketId) throws Exception {
-        UserAccount userAccount = userAccountRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Lottery lottery = lotteryRepository.findById(ticketId).orElseThrow(() -> new RuntimeException("Ticket not found"));
+    public ResponseEntity<Map<String, Integer>> buyLottery(Integer userId, Integer ticketId) {
+        UserAccount userAccount = userAccountRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Lottery lottery = lotteryRepository.findById(ticketId).orElseThrow(() -> new NotFoundException("Ticket not found"));
 
         UserTicket userTicket = new UserTicket();
         userTicket.setUserAccount(userAccount);
@@ -81,7 +81,7 @@ public class LotteryService {
     }
 
     public ResponseEntity<Map<String, Object>> getUserLotteries(Integer userId) {
-        UserAccount userAccount = userAccountRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        UserAccount userAccount = userAccountRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
 
         Integer totalPrice = userAccount.getCost();
         List<String> userTickets = userAccount.getTickets()
@@ -98,13 +98,13 @@ public class LotteryService {
     }
 
     @Transactional
-    public ResponseEntity<Map<String, String>> sellLottery(Integer userId, Integer ticketId) {
-        UserAccount userAccount = userAccountRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
-        Lottery lottery = lotteryRepository.findById(ticketId).orElseThrow(() -> new RuntimeException("Ticket not found"));
+    public ResponseEntity<LotteryTicketResponse> sellLottery(Integer userId, Integer ticketId) {
+        UserAccount userAccount = userAccountRepository.findById(userId).orElseThrow(() -> new NotFoundException("User not found"));
+        Lottery lottery = lotteryRepository.findById(ticketId).orElseThrow(() -> new NotFoundException("Ticket not found"));
         Optional<UserTicket> selectedUserTicket = userTicketRepository.findByUserIdLotteryId(userAccount.getId(), lottery.getId()).stream().findFirst();
 
         if (selectedUserTicket.isEmpty()) {
-            throw new RuntimeException("User ticket not found");
+            throw new NotFoundException("This user does not have ticket id: " + ticketId);
         } else {
             userTicketRepository.deleteById(selectedUserTicket.get().getId());
 
@@ -112,20 +112,18 @@ public class LotteryService {
             userAccount.setCost(totalPrice);
             userAccountRepository.save(userAccount);
 
-            Map<String, String> userTicketDeleteResponse = new HashMap<>();
-            userTicketDeleteResponse.put("ticket", selectedUserTicket.get().getLottery().getTicket());
-            return ResponseEntity.ok().body(userTicketDeleteResponse);
+            return ResponseEntity.ok().body(new LotteryTicketResponse(selectedUserTicket.get().getLottery().getTicket()));
         }
     }
 }
 
 record LotteryCreateRequest(
-        @NotNull
-        @Pattern(regexp = "^\\d{6}$", message = "Ticket must be a 6-digit number.")
+        @NotNull(message = "Ticket number cannot be null")
+        @Pattern(regexp = "^\\d{6}$", message = "Ticket must be a 6-digit number")
         String ticket,
-        @Min(0)
+        @Min(value = 0, message = "Price must be 0 or greater than 0")
         Integer price,
-        @Min(0)
-        @Max(100)
+        @Min(value = 0, message = "Amount must be 0 or greater than 0")
+        @Max(value = 100, message = "Amount must be under or equal to 100")
         Integer amount) {
 }

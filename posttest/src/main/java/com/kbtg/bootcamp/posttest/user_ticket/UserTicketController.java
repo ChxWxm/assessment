@@ -1,6 +1,7 @@
 package com.kbtg.bootcamp.posttest.user_ticket;
 
 import com.kbtg.bootcamp.posttest.lottery.LotteryService;
+import com.kbtg.bootcamp.posttest.lottery.response.LotteryTicketResponse;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,7 +17,7 @@ public class UserTicketController {
     }
 
     @PostMapping("/{userId}/lotteries/{ticketId}/")
-    public ResponseEntity<Map<String, Integer>> buyLottery(@PathVariable Integer userId, @PathVariable Integer ticketId) throws Exception {
+    public ResponseEntity<Map<String, Integer>> buyLottery(@PathVariable Integer userId, @PathVariable Integer ticketId) {
         return lotteryService.buyLottery(userId, ticketId);
     }
 
@@ -26,7 +27,7 @@ public class UserTicketController {
     }
 
     @DeleteMapping("/{userId}/lotteries/{ticketId}/")
-    public ResponseEntity<Map<String, String>> sellLottery(@PathVariable Integer userId, @PathVariable Integer ticketId) {
+    public ResponseEntity<LotteryTicketResponse> sellLottery(@PathVariable Integer userId, @PathVariable Integer ticketId) {
         return lotteryService.sellLottery(userId, ticketId);
     }
 }
