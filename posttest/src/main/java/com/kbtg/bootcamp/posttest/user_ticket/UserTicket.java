@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+@Setter
 @Entity
 @Table(name = "user_ticket")
 public class UserTicket {
@@ -16,12 +17,19 @@ public class UserTicket {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    @Setter
     private UserAccount userAccount;
 
     @ManyToOne
     @JoinColumn(name = "lottery_id")
     @Getter
-    @Setter
     private Lottery lottery;
+
+    public UserTicket() {
+    }
+
+    public UserTicket(Integer id, UserAccount userAccount, Lottery lottery) {
+        this.id = id;
+        this.userAccount = userAccount;
+        this.lottery = lottery;
+    }
 }

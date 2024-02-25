@@ -27,6 +27,15 @@ public class UserAccount {
     private Integer cost;
 
     @OneToMany(mappedBy = "userAccount")
+    @Setter
     private List<UserTicket> tickets;
+
+    public UserAccount() {
+    }
+
+    public UserAccount(Integer id, Integer cost) {
+        this.id = id;
+        this.cost = cost;
+    }
 }
 

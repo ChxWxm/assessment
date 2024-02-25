@@ -26,7 +26,13 @@ public class Lottery {
     @OneToMany(mappedBy = "lottery")
     private List<UserTicket> tickets;
 
-
     public Lottery() {
+    }
+
+    public Lottery(Integer id, String ticket, Integer price, Integer amount) {
+        this.id = id;
+        this.ticket = ticket;
+        this.price = price;
+        this.amount = amount;
     }
 }
